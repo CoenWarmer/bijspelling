@@ -1,22 +1,9 @@
-import styles from './index.module.css';
 import styled from '@emotion/styled';
 import { useEffect, useState } from 'react';
+import classNames from 'classnames';
+
 import { api } from '~/utils/api';
-
-const shuffleArray = (array: string[] | undefined) => {
-  if (!array) return;
-
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    const temp = array[i];
-
-    if (temp) {
-      array[i] = array[j];
-      array[j] = temp;
-    }
-  }
-  return array;
-};
+import styles from './index.module.css';
 
 export const Game = () => {
   const date = Date.now();
@@ -41,7 +28,7 @@ export const Game = () => {
 
   useEffect(() => {
     if (letters && !stateLetters) {
-      setStateLetters(shuffleArray(letters));
+      setStateLetters(letters);
     }
 
     if (words && words?.length > stateWords.length) {
@@ -58,8 +45,8 @@ export const Game = () => {
   };
 
   const handleShuffle = () => {
-    const newLetters = shuffleArray(letters);
-    console.log('shuffleArray(letters)', newLetters);
+    const newLetters = stateLetters?.sort(() => (Math.random() > 0.5 ? 1 : -1));
+
     setStateLetters(newLetters);
   };
 
@@ -76,11 +63,10 @@ export const Game = () => {
       }
 
       if (status === 'ok') {
+        setStateInput('');
       }
     } catch (error) {}
   };
-
-  console.log('stateLetters', stateLetters);
 
   return (
     <Container>
@@ -89,12 +75,18 @@ export const Game = () => {
       <LetterContainer>
         <CenterLetterContainer>
           {centerLetter && (
-            <Letter letter={centerLetter} isCenterLetter onClick={handleSelectLetter} />
+            <Letter isCenterLetter letter={centerLetter} onClick={handleSelectLetter} />
           )}
         </CenterLetterContainer>
 
         {stateLetters?.map((letter, index) => (
-          <Letter key={index} letter={letter} isCenterLetter={false} onClick={handleSelectLetter} />
+          <Letter
+            key={letter}
+            position={index + 1}
+            isCenterLetter={false}
+            letter={letter}
+            onClick={handleSelectLetter}
+          />
         ))}
       </LetterContainer>
 
@@ -118,19 +110,22 @@ export const Game = () => {
 interface LetterProps {
   letter: string;
   isCenterLetter: boolean;
+  position?: number;
   onClick: (letter: string) => void;
 }
 
-const Letter = ({ letter, isCenterLetter, onClick }: LetterProps) => {
+const Letter = ({ letter, isCenterLetter, position, onClick }: LetterProps) => {
+  const classes = classNames({
+    'position-center': isCenterLetter,
+    ...(position && { [`position-${position}`]: true }),
+  });
+
   const handleSelect = () => {
     onClick(letter);
   };
 
   return (
-    <LetterButton
-      className={isCenterLetter ? 'centerLetterButton' : 'normalLetterButton'}
-      onClick={handleSelect}
-    >
+    <LetterButton className={classes} onClick={handleSelect}>
       {letter}
     </LetterButton>
   );
@@ -163,6 +158,52 @@ const Actions = styled.div`
 `;
 
 const LetterButton = styled.button`
+  display: flex;
+  position: absolute;
   width: 50px;
   height: 50px;
+  padding: 0;
+  border-radius: 100%;
+  justify-content: center;
+  align-items: center;
+  margin-left: -25px;
+  border: solid 0 #000;
+  font-weight: bold;
+  font-size: 14px;
+
+  &.position-center {
+    top: -37px;
+    left: 25px;
+    background: yellow;
+  }
+
+  &.position-1 {
+    top: 5px;
+    left: 0px;
+  }
+
+  &.position-2 {
+    top: 35px;
+    left: 47px;
+  }
+
+  &.position-3 {
+    top: 90px;
+    left: 47px;
+  }
+
+  &.position-4 {
+    top: 120px;
+    left: 0px;
+  }
+
+  &.position-5 {
+    top: 90px;
+    left: -47px;
+  }
+
+  &.position-6 {
+    top: 35px;
+    left: -47px;
+  }
 `;

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { createTRPCRouter, protectedProcedure, publicProcedure } from '~/server/api/trpc';
+import * as someTextContent from '../../../../assets/wordlist.txt';
 
 const processWord = (word: string) => {
   return { acceptedWord: true, score: word.length };
@@ -50,11 +51,11 @@ export const gameRouter = createTRPCRouter({
         },
       });
 
-      if (userGame.length === 0) {
+      if (!userGame[0]) {
         throw new Error("Can't find no damn game");
       }
 
-      const { score: oldScore, updatedAt, words: oldWords } = userGame[0]!;
+      const { score: oldScore, updatedAt, words: oldWords } = userGame[0];
       const processedWord = processWord(input.word);
 
       await ctx.prisma.userGame.update({
